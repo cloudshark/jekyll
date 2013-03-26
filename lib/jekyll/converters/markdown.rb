@@ -30,10 +30,6 @@ module Jekyll
 
               @redcarpet_extensions = {}
               @config['redcarpet']['extensions'].each { |e| @redcarpet_extensions[e.to_sym] = true }
-
-              if @config['redcarpet']['toc_token']
-                @toc_renderer ||= Class.new(Redcarpet::Render::HTML_TOC)
-              end
             rescue LoadError
               STDERR.puts 'You are missing a library required for Markdown. Please run:'
               STDERR.puts '  $ [sudo] gem install redcarpet'
@@ -109,14 +105,7 @@ module Jekyll
             @redcarpet_extensions[:fenced_code_blocks] = !@redcarpet_extensions[:no_fenced_code_blocks]
             @renderer.send :include, Redcarpet::Render::SmartyPants if @redcarpet_extensions[:smart]
             markdown = Redcarpet::Markdown.new(@renderer.new(@redcarpet_extensions), @redcarpet_extensions)
-            html = markdown.render(content)
-
-            if @toc_renderer and html.include?(@config['redcarpet']['toc_token'])
-              toc_markdown = Redcarpet::Markdown.new(@toc_renderer.new, @redcarpet_extensions)
-              html.gsub!(@config['redcarpet']['toc_token'], toc_markdown.render(content))
-            end
-            
-            html
+            markdown.render(content)
           when 'kramdown'
             # Check for use of coderay
             if @config['kramdown']['use_coderay']
